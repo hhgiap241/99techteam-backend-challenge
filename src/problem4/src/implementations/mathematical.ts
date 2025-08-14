@@ -1,23 +1,3 @@
-/**
- * Implementation C: Mathematical Formula - The Performance Champion
- * 
- * Advantages:
- * - Constant time execution regardless of input size
- * - Minimal memory usage
- * - Mathematically elegant and efficient
- * - Perfect for large inputs
- * 
- * Disadvantages:
- * - Less intuitive for those unfamiliar with the formula
- * - Not suitable for learning basic programming concepts
- * - Less flexible for modifications to the calculation
- * 
- * Best for: High-performance scenarios, large inputs, production systems
- * 
- * Time complexity: O(1)
- * Space complexity: O(1)
- */
-
 import { validateInput } from '../utils/validation';
 
 /**
