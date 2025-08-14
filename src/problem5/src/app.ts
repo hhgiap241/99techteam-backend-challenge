@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from '@config/index';
 import { DatabaseService } from './database/connection';
+import { RedisService } from './services/redis.service';
 
 export class App {
   public app: Application;
@@ -22,7 +23,7 @@ export class App {
     // CORS configuration
     this.app.use(cors({
       origin: config.server.nodeEnv === 'production'
-        ? ['https://yourdomain.com'] // Add your production domains
+        ? ['https://yourdomain.com']
         : ['http://localhost:3000', 'http://localhost:3001'],
       credentials: true,
     }));
@@ -57,7 +58,12 @@ export class App {
     this.app.get('/health', async (_req: Request, res: Response) => {
       try {
         const database = DatabaseService.getInstance();
-        const dbHealth = await database.getHealthStatus();
+        const redis = RedisService.getInstance();
+
+        const [dbHealth, redisHealth] = await Promise.all([
+          database.getHealthStatus(),
+          redis.getHealthStatus(),
+        ]);
 
         res.status(200).json({
           status: 'OK',
@@ -66,6 +72,7 @@ export class App {
           version: '1.0.0',
           environment: config.server.nodeEnv,
           database: dbHealth,
+          redis: redisHealth,
         });
       } catch (_error) {
         res.status(500).json({
@@ -75,6 +82,7 @@ export class App {
           version: '1.0.0',
           environment: config.server.nodeEnv,
           database: { status: 'unhealthy' },
+          redis: { status: 'unhealthy' },
         });
       }
     });
