@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
   synchronize: config.server.nodeEnv === 'development', // Auto-sync in development only
   logging: config.server.nodeEnv === 'development' ? ['query', 'error'] : ['error'],
   entities: [
-    // Entity files will be added here
+    // Entity files
     'src/models/**/*.entity.{ts,js}',
   ],
   migrations: [
