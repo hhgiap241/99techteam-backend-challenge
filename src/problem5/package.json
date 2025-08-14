@@ -1,7 +1,7 @@
 {
-  "name": "problem5-crud-server",
+  "name": "bookstore-api",
   "version": "1.0.0",
-  "description": "A robust CRUD server with user order management and Redis concurrency control",
+  "description": "A robust bookstore API with order management and Redis concurrency control",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -13,9 +13,14 @@
     "migration:generate": "typeorm-ts-node-commonjs migration:generate",
     "migration:run": "typeorm-ts-node-commonjs migration:run",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert",
-    "seed": "ts-node src/database/seeds/index.ts"
+    "seed": "ts-node src/database/seeds/index.ts",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
   },
   "keywords": [
+    "bookstore",
+    "api",
     "crud",
     "express",
     "typescript",
@@ -23,7 +28,8 @@
     "redis",
     "typeorm",
     "jwt",
-    "orders"
+    "orders",
+    "books"
   ],
   "author": "Cris",
   "license": "MIT",
