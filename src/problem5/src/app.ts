@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from '@config/index';
+import { DatabaseService } from './database/connection';
 
 export class App {
   public app: Application;
@@ -53,14 +54,29 @@ export class App {
 
   private initializeRoutes(): void {
     // Health check endpoint
-    this.app.get('/health', (_req: Request, res: Response) => {
-      res.status(200).json({
-        status: 'OK',
-        timestamp: new Date().toISOString(),
-        service: 'Bookstore API',
-        version: '1.0.0',
-        environment: config.server.nodeEnv,
-      });
+    this.app.get('/health', async (_req: Request, res: Response) => {
+      try {
+        const database = DatabaseService.getInstance();
+        const dbHealth = await database.getHealthStatus();
+
+        res.status(200).json({
+          status: 'OK',
+          timestamp: new Date().toISOString(),
+          service: 'Bookstore API',
+          version: '1.0.0',
+          environment: config.server.nodeEnv,
+          database: dbHealth,
+        });
+      } catch (_error) {
+        res.status(500).json({
+          status: 'ERROR',
+          timestamp: new Date().toISOString(),
+          service: 'Bookstore API',
+          version: '1.0.0',
+          environment: config.server.nodeEnv,
+          database: { status: 'unhealthy' },
+        });
+      }
     });
 
     // API routes will be added here

@@ -1,12 +1,14 @@
 import 'reflect-metadata'; // Required for TypeORM decorators
 import { App } from './app';
+import { DatabaseService } from './database/connection';
 
 async function bootstrap(): Promise<void> {
   try {
     console.log('🚀 Starting Bookstore API...');
 
-    // TODO: Initialize database connection
-    console.log('📦 Database connection will be initialized here');
+    // Initialize database connection
+    const database = DatabaseService.getInstance();
+    await database.connect();
 
     // TODO: Initialize Redis connection  
     console.log('🔴 Redis connection will be initialized here');
@@ -22,13 +24,25 @@ async function bootstrap(): Promise<void> {
 }
 
 // Handle graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('🛑 SIGTERM received, shutting down gracefully');
+  try {
+    const database = DatabaseService.getInstance();
+    await database.disconnect();
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+  }
   process.exit(0);
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('🛑 SIGINT received, shutting down gracefully');
+  try {
+    const database = DatabaseService.getInstance();
+    await database.disconnect();
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+  }
   process.exit(0);
 });
 
