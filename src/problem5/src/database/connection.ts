@@ -8,10 +8,9 @@ export const AppDataSource = new DataSource({
   username: config.database.username,
   password: config.database.password,
   database: config.database.database,
-  synchronize: config.server.nodeEnv === 'development', // Auto-sync in development only
+  synchronize: false,
   logging: config.server.nodeEnv === 'development' ? ['query', 'error'] : ['error'],
   entities: [
-    // Entity files
     'src/models/**/*.entity.{ts,js}',
   ],
   migrations: [
@@ -109,7 +108,7 @@ export class DatabaseService {
       return {
         status: 'healthy',
         database: config.database.database,
-        migrations: hasPendingMigrations ? 1 : 0, // Simple indicator
+        migrations: hasPendingMigrations ? 1 : 0,
         uptime: result[0]?.current_time || 'unknown',
       };
     } catch (_error) {

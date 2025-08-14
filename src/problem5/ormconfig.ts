@@ -1,10 +1,8 @@
 import { DataSource } from 'typeorm';
 import dotenv from 'dotenv';
 
-// Load environment variables for CLI tools
 dotenv.config();
 
-// TypeORM CLI configuration
 // This is used by TypeORM CLI commands for migrations
 export default new DataSource({
   type: 'postgres',
@@ -17,5 +15,5 @@ export default new DataSource({
   migrations: ['src/database/migrations/**/*.ts'],
   subscribers: ['src/database/subscribers/**/*.ts'],
   logging: false,
-  synchronize: false, // Never auto-sync in production
+  synchronize: false,
 });
