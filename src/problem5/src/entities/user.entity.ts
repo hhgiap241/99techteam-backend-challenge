@@ -12,7 +12,6 @@ import { UserRole } from '../enums';
 import { Order } from './order.entity';
 
 @Entity('users')
-@Index(['email'], { unique: true })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
