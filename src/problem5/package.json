@@ -4,7 +4,7 @@
   "description": "A robust bookstore API with order management and Redis concurrency control",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "jest",
@@ -13,7 +13,7 @@
     "migration:generate": "typeorm-ts-node-commonjs migration:generate",
     "migration:run": "typeorm-ts-node-commonjs migration:run",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert",
-    "seed": "ts-node src/database/seeds/index.ts",
+    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/index.ts",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f"
@@ -62,7 +62,8 @@
     "ts-jest": "^29.1.1",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
-    "eslint": "^8.47.0"
+    "eslint": "^8.47.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "engines": {
     "node": ">=18.0.0",
