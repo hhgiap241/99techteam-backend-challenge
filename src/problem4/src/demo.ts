@@ -7,7 +7,7 @@ import { sum_to_n_a, sum_to_n_b, sum_to_n_c } from './implementations';
 export function runDemo(): void {
   console.log('🚀 Problem 4: Three Ways to Sum to n\n');
 
-  const testCases = [0, 1, 5, 10, 100, 1000, -10, 5.5, Number.MAX_SAFE_INTEGER + 1, Number.MAX_SAFE_INTEGER];
+  const testCases = [0, 1, 5, 10, 100, 1000, -10, 5.5, Number.MAX_SAFE_INTEGER + 1, Number.MAX_SAFE_INTEGER, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, NaN];
 
   for (const n of testCases) {
     try {
