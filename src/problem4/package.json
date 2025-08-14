@@ -1,0 +1,19 @@
+{
+  "name": "problem4-sum-to-n",
+  "version": "1.0.0",
+  "description": "Three optimized implementations for sum to n with comprehensive testing and benchmarking",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "demo": "tsx src/demo.ts"
+  },
+  "author": "Cris",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
