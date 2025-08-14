@@ -11,7 +11,7 @@ export default new DataSource({
   username: process.env['DB_USERNAME'] || 'postgres',
   password: process.env['DB_PASSWORD'] || 'password',
   database: process.env['DB_DATABASE'] || 'bookstore_db',
-  entities: ['src/models/**/*.entity.ts'],
+  entities: ['src/entities/**/*.entity.ts'],
   migrations: ['src/database/migrations/**/*.ts'],
   subscribers: ['src/database/subscribers/**/*.ts'],
   logging: false,
