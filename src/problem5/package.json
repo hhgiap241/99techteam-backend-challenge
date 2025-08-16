@@ -1,7 +1,7 @@
 {
   "name": "bookstore-api",
   "version": "1.0.0",
-  "description": "A robust bookstore API with order management and Redis concurrency control",
+  "description": "A robust bookstore API with order management",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/server.ts",
@@ -25,7 +25,6 @@
     "express",
     "typescript",
     "postgresql",
-    "redis",
     "typeorm",
     "jwt",
     "orders",
@@ -37,7 +36,6 @@
     "express": "^4.18.2",
     "typeorm": "^0.3.17",
     "pg": "^8.11.3",
-    "redis": "^4.6.8",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "class-validator": "^0.14.0",

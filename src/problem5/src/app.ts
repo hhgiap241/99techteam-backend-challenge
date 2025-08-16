@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import { DatabaseService } from './database/connection';
-import { RedisService } from './services/redis.service';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -63,12 +62,7 @@ export class App {
     this.app.get('/health', async (_req: Request, res: Response) => {
       try {
         const database = DatabaseService.getInstance();
-        const redis = RedisService.getInstance();
-
-        const [dbHealth, redisHealth] = await Promise.all([
-          database.getHealthStatus(),
-          redis.getHealthStatus(),
-        ]);
+        const dbHealth = await database.getHealthStatus();
 
         res.status(200).json({
           status: 'OK',
@@ -77,7 +71,6 @@ export class App {
           version: '1.0.0',
           environment: config.server.nodeEnv,
           database: dbHealth,
-          redis: redisHealth,
         });
       } catch (_error) {
         res.status(500).json({
@@ -87,7 +80,6 @@ export class App {
           version: '1.0.0',
           environment: config.server.nodeEnv,
           database: { status: 'unhealthy' },
-          redis: { status: 'unhealthy' },
         });
       }
     });

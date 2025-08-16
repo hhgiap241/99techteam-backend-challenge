@@ -14,11 +14,6 @@ export const config = {
     password: process.env['DB_PASSWORD'] || 'password',
     database: process.env['DB_DATABASE'] || 'bookstore_db',
   },
-  redis: {
-    host: process.env['REDIS_HOST'] || 'localhost',
-    port: parseInt(process.env['REDIS_PORT'] || '6379', 10),
-    password: process.env['REDIS_PASSWORD'] || undefined,
-  },
   jwt: {
     secret: process.env['JWT_SECRET'] || 'fallback-secret-key',
     refreshSecret: process.env['JWT_REFRESH_SECRET'] || 'fallback-refresh-secret-key',
