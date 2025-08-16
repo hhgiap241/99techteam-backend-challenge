@@ -1,5 +1,6 @@
-import { bookRepository } from '../repositories';
+import { DatabaseService } from '@/database/connection';
 import type { Book } from '../entities';
+import { Book as BookEntity } from '../entities';
 import type { BookCategory } from '../enums';
 
 export interface CreateBookData {
@@ -44,6 +45,7 @@ export interface PaginatedBooks {
  * Create a new book
  */
 export async function createBook(bookData: CreateBookData): Promise<Book> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   const book = bookRepository.create({
     title: bookData.title,
     author: bookData.author,
@@ -60,6 +62,7 @@ export async function createBook(bookData: CreateBookData): Promise<Book> {
  * Get all books with filters and pagination
  */
 export async function getBooks(filters: BookFilters): Promise<PaginatedBooks> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   const queryBuilder = bookRepository.createQueryBuilder('book');
 
   if (filters.category) {
@@ -109,6 +112,7 @@ export async function getBooks(filters: BookFilters): Promise<PaginatedBooks> {
  * Get a book by ID
  */
 export async function getBookById(id: string): Promise<Book | null> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   return bookRepository.findOne({ where: { id } });
 }
 
@@ -116,6 +120,7 @@ export async function getBookById(id: string): Promise<Book | null> {
  * Update a book
  */
 export async function updateBook(id: string, updateData: UpdateBookData): Promise<Book | null> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   const book = await bookRepository.findOne({ where: { id } });
 
   if (!book) {
@@ -132,6 +137,7 @@ export async function updateBook(id: string, updateData: UpdateBookData): Promis
  * Delete a book
  */
 export async function deleteBook(id: string): Promise<boolean> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   const book = await bookRepository.findOne({ where: { id } });
 
   if (!book) {
@@ -146,6 +152,7 @@ export async function deleteBook(id: string): Promise<boolean> {
  * Check if a book exists by ID
  */
 export async function bookExists(id: string): Promise<boolean> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   const count = await bookRepository.count({ where: { id } });
   return count > 0;
 }
@@ -154,6 +161,8 @@ export async function bookExists(id: string): Promise<boolean> {
  * Get books by category
  */
 export async function getBooksByCategory(category: BookCategory): Promise<Book[]> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
+
   return bookRepository.find({
     where: { category },
     order: { createdAt: 'DESC' }
@@ -164,6 +173,8 @@ export async function getBooksByCategory(category: BookCategory): Promise<Book[]
  * Get books with low stock (for inventory management)
  */
 export async function getBooksWithLowStock(threshold: number = 5): Promise<Book[]> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
+
   return bookRepository
     .createQueryBuilder('book')
     .where('book.stockQuantity <= :threshold', { threshold })
@@ -175,6 +186,7 @@ export async function getBooksWithLowStock(threshold: number = 5): Promise<Book[
  * Update book stock quantity
  */
 export async function updateBookStock(id: string, newStock: number): Promise<Book | null> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   const book = await bookRepository.findOne({ where: { id } });
 
   if (!book) {
@@ -189,6 +201,7 @@ export async function updateBookStock(id: string, newStock: number): Promise<Boo
  * Decrease book stock (for order processing)
  */
 export async function decreaseBookStock(id: string, quantity: number): Promise<Book | null> {
+  const bookRepository = DatabaseService.getInstance().getDataSource().getRepository(BookEntity);
   const book = await bookRepository.findOne({ where: { id } });
 
   if (!book || book.stockQuantity < quantity) {

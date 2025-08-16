@@ -4,7 +4,8 @@ import { UserRole } from '../enums';
 import { hashPassword, comparePassword, validatePassword } from '../utils/password.util';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.util';
 import { authenticateToken } from '../middleware/auth.middleware';
-import { userRepository } from '@/repositories';
+import { DatabaseService } from '@/database/connection';
+import { User } from '@/entities';
 
 const router = Router();
 
@@ -44,6 +45,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Check if user already exists
+    const userRepository = DatabaseService.getInstance().getDataSource().getRepository(User);
     const existingUser = await userRepository.findOne({
       where: { email }
     });
@@ -113,6 +115,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Find user by email
+    const userRepository = DatabaseService.getInstance().getDataSource().getRepository(User);
     const user = await userRepository.findOne({
       where: { email }
     });
@@ -183,6 +186,7 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
     const payload = verifyRefreshToken(refreshToken);
 
     // Get user from database
+    const userRepository = DatabaseService.getInstance().getDataSource().getRepository(User);
     const user = await userRepository.findOne({
       where: { id: payload.userId }
     });

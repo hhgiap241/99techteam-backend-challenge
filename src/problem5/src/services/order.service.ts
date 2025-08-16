@@ -1,5 +1,4 @@
-import { orderRepository } from '../repositories';
-import { AppDataSource } from '../database/connection';
+import { AppDataSource, DatabaseService } from '../database/connection';
 import type { Order, OrderItem, Book } from '../entities';
 import { Book as BookEntity } from '../entities/book.entity';
 import { User as UserEntity } from '../entities/user.entity';
@@ -151,6 +150,8 @@ export async function placeOrder(orderRequest: PlaceOrderRequest): Promise<Order
  * Get user's orders
  */
 export async function getUserOrders(userId: string): Promise<Order[]> {
+  const orderRepository = DatabaseService.getInstance().getDataSource().getRepository(OrderEntity);
+
   return orderRepository.find({
     where: { user: { id: userId } },
     relations: ['orderItems', 'orderItems.book'],
@@ -162,6 +163,8 @@ export async function getUserOrders(userId: string): Promise<Order[]> {
  * Get order by ID
  */
 export async function getOrderById(orderId: string): Promise<Order | null> {
+  const orderRepository = DatabaseService.getInstance().getDataSource().getRepository(OrderEntity);
+
   return orderRepository.findOne({
     where: { id: orderId },
     relations: ['user', 'orderItems', 'orderItems.book']
