@@ -1,11 +1,10 @@
 import type { Request, Response } from 'express';
 import { Router } from 'express';
-import { DatabaseService } from '../database/connection';
-import { User } from '../entities';
 import { UserRole } from '../enums';
 import { hashPassword, comparePassword, validatePassword } from '../utils/password.util';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.util';
 import { authenticateToken } from '../middleware/auth.middleware';
+import { userRepository } from '@/repositories';
 
 const router = Router();
 
@@ -43,9 +42,6 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-
-    const databaseService = DatabaseService.getInstance();
-    const userRepository = databaseService.getDataSource().getRepository(User);
 
     // Check if user already exists
     const existingUser = await userRepository.findOne({
@@ -116,9 +112,6 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const databaseService = DatabaseService.getInstance();
-    const userRepository = databaseService.getDataSource().getRepository(User);
-
     // Find user by email
     const user = await userRepository.findOne({
       where: { email }
@@ -188,9 +181,6 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
 
     // Verify refresh token
     const payload = verifyRefreshToken(refreshToken);
-
-    const databaseService = DatabaseService.getInstance();
-    const userRepository = databaseService.getDataSource().getRepository(User);
 
     // Get user from database
     const user = await userRepository.findOne({

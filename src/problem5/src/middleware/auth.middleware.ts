@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
-import { DatabaseService } from '../database/connection';
 import { User } from '../entities';
 import { verifyAccessToken, extractTokenFromHeader } from '../utils/jwt.util';
 import type { JwtPayload } from '../utils/jwt.util';
+import { userRepository } from '@/repositories';
 
 // Extend Express Request interface to include user
 declare global {
@@ -40,9 +40,6 @@ export async function authenticateToken(
     const payload: JwtPayload = verifyAccessToken(token);
 
     // Get user from database
-    const databaseService = DatabaseService.getInstance();
-    const userRepository = databaseService.getDataSource().getRepository(User);
-
     const user = await userRepository.findOne({
       where: { id: payload.userId }
     });
