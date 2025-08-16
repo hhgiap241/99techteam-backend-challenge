@@ -9,6 +9,7 @@ import { RedisService } from './services/redis.service';
 // Import routes
 import authRoutes from './routes/auth.routes';
 import bookRoutes from './routes/book.routes';
+import orderRoutes from './routes/order.routes';
 
 export class App {
   public app: Application;
@@ -94,6 +95,7 @@ export class App {
     // API routes
     this.app.use('/api/auth', authRoutes);
     this.app.use('/api/books', bookRoutes);
+    this.app.use('/api/orders', orderRoutes);
 
     // API info endpoint
     this.app.get('/api', (_req: Request, res: Response) => {
@@ -111,7 +113,9 @@ export class App {
           'POST /api/books - Create book (Admin only)',
           'PUT /api/books/:id - Update book (Admin only)',
           'DELETE /api/books/:id - Delete book (Admin only)',
-          'GET /api/orders - List orders (coming soon)',
+          'POST /api/orders - Place order (Auth required)',
+          'GET /api/orders - Get user orders (Auth required)',
+          'GET /api/orders/:id - Get order by ID (Auth required)',
         ],
       });
     });
