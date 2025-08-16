@@ -21,7 +21,9 @@ export const config = {
   },
   jwt: {
     secret: process.env['JWT_SECRET'] || 'fallback-secret-key',
-    expiresIn: process.env['JWT_EXPIRES_IN'] || '24h',
+    refreshSecret: process.env['JWT_REFRESH_SECRET'] || 'fallback-refresh-secret-key',
+    accessTokenExpiry: process.env['JWT_ACCESS_TOKEN_EXPIRY'] || '15m',
+    refreshTokenExpiry: process.env['JWT_REFRESH_TOKEN_EXPIRY'] || '7d',
   },
   rateLimit: {
     windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000', 10), // 15 minutes
@@ -33,6 +35,11 @@ export const config = {
 } as const;
 
 // Validation
-if (config.server.nodeEnv === 'production' && config.jwt.secret === 'fallback-secret-key') {
-  throw new Error('JWT_SECRET must be set in production environment');
+if (config.server.nodeEnv === 'production') {
+  if (config.jwt.secret === 'fallback-secret-key') {
+    throw new Error('JWT_SECRET must be set in production environment');
+  }
+  if (config.jwt.refreshSecret === 'fallback-refresh-secret-key') {
+    throw new Error('JWT_REFRESH_SECRET must be set in production environment');
+  }
 }
