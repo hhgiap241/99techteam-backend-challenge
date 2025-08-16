@@ -34,7 +34,6 @@ const config: Config = {
   },
 
   // Setup files to run before tests
-  setupFiles: ['<rootDir>/tests/env-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   globalSetup: '<rootDir>/tests/global-setup.ts',
   globalTeardown: '<rootDir>/tests/global-teardown.ts',
