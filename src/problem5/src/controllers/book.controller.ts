@@ -81,7 +81,7 @@ export class BookController {
 
       const result = await getBooks(filters as BookFilters);
 
-      res.json({
+      res.status(200).json({
         success: true,
         data: result.books,
         pagination: result.pagination
@@ -120,7 +120,7 @@ export class BookController {
         return;
       }
 
-      res.json({
+      res.status(200).json({
         success: true,
         data: book
       });
@@ -170,7 +170,7 @@ export class BookController {
         return;
       }
 
-      res.json({
+      res.status(200).json({
         success: true,
         message: 'Book updated successfully',
         data: updatedBook
@@ -209,7 +209,7 @@ export class BookController {
         return;
       }
 
-      res.json({
+      res.status(200).json({
         success: true,
         message: 'Book deleted successfully'
       });
