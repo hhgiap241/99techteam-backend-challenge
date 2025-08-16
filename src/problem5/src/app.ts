@@ -1,10 +1,13 @@
-import express, { type Application, type Request, type Response, type NextFunction } from 'express';
+import express, { type Request, type Response, type NextFunction, type Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { config } from '@config/index';
+import { config } from './config';
 import { DatabaseService } from './database/connection';
 import { RedisService } from './services/redis.service';
+
+// Import routes
+import authRoutes from './routes/auth.routes';
 
 export class App {
   public app: Application;
@@ -87,8 +90,11 @@ export class App {
       }
     });
 
-    // API routes will be added here
-    this.app.use('/api', (_req: Request, res: Response) => {
+    // API routes
+    this.app.use('/api/auth', authRoutes);
+
+    // API info endpoint
+    this.app.get('/api', (_req: Request, res: Response) => {
       res.status(200).json({
         message: 'Bookstore API is running!',
         version: '1.0.0',
@@ -96,8 +102,10 @@ export class App {
           'GET /health - Health check',
           'POST /api/auth/register - Register user',
           'POST /api/auth/login - Login user',
-          'GET /api/books - List books',
-          'GET /api/orders - List orders',
+          'POST /api/auth/refresh - Refresh token',
+          'GET /api/auth/profile - Get user profile',
+          'GET /api/books - List books (coming soon)',
+          'GET /api/orders - List orders (coming soon)',
         ],
       });
     });
