@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { validateCreateBook, validateUpdateBook, validateBookFilters } from '../services/book-validation.service';
+import { validateCreateBook, validateUpdateBook, validateBookFilters } from '../validation/book.validation';
 import { createBook, getBooks, getBookById, updateBook, deleteBook } from '../services/book.service';
 import type { BookFilters } from '../services/book.service';
 import type { BookCategory } from '../enums';
