@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import { DatabaseService } from '../connection';
 import { User, Book, Order, OrderItem } from '../../entities';
 import { UserRole, BookCategory, OrderStatus } from '../../enums';
+import { hashPassword } from '@/utils';
 
 dotenv.config();
 
@@ -31,7 +31,7 @@ async function runSeeds() {
 
     // Create Users
     const userRepository = dataSource.getRepository(User);
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await hashPassword('password123');
 
     const adminUser = userRepository.create({
       name: 'Admin User',
