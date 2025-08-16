@@ -62,8 +62,7 @@ export class OrderController {
 
       res.status(500).json({
         success: false,
-        message: 'Failed to place order',
-        error: process.env['NODE_ENV'] === 'development' ? error : undefined
+        message: 'Failed to place order'
       });
     }
   }
@@ -111,8 +110,7 @@ export class OrderController {
 
       res.status(500).json({
         success: false,
-        message: 'Failed to retrieve orders',
-        error: process.env['NODE_ENV'] === 'development' ? error : undefined
+        message: 'Failed to retrieve orders'
       });
     }
   }
@@ -164,8 +162,7 @@ export class OrderController {
 
       res.status(500).json({
         success: false,
-        message: 'Failed to retrieve order',
-        error: process.env['NODE_ENV'] === 'development' ? error : undefined
+        message: 'Failed to retrieve order'
       });
     }
   }
