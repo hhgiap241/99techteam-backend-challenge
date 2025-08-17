@@ -1,6 +1,11 @@
 import { DataSource } from 'typeorm';
 import { config } from '@config/index';
+import { User } from '@/entities';
+import { Book } from '@/entities';
+import { Order } from '@/entities';
+import { OrderItem } from '@/entities';
 
+const isProd = config.server.nodeEnv === 'production';
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: config.database.host,
@@ -9,16 +14,11 @@ export const AppDataSource = new DataSource({
   password: config.database.password,
   database: config.database.database,
   synchronize: false,
-  logging: config.server.nodeEnv === 'development' ? ['query', 'error'] : ['error'],
-  entities: [
-    'src/entities/**/*.entity.{ts,js}',
-  ],
-  migrations: [
-    'src/database/migrations/**/*.{ts,js}',
-  ],
-  subscribers: [
-    'src/database/subscribers/**/*.{ts,js}',
-  ],
+  logging: isProd ? ['error'] : ['query', 'error'],
+  entities: [User, Book, Order, OrderItem],
+  migrations: isProd
+    ? [__dirname + '/migrations/*.js']
+    : [__dirname + '/migrations/*.ts'],
   // Connection pool settings
   extra: {
     max: 20, // Maximum connections in pool
@@ -27,7 +27,7 @@ export const AppDataSource = new DataSource({
     connectionTimeoutMillis: 10000, // Connection timeout 10s
   },
   // SSL configuration for production
-  ssl: config.server.nodeEnv === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: isProd ? { rejectUnauthorized: false } : false,
 });
 
 export class DatabaseService {
