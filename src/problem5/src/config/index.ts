@@ -24,9 +24,6 @@ export const config = {
     windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000', 10), // 15 minutes
     maxRequests: parseInt(process.env['RATE_LIMIT_MAX_REQUESTS'] || '100', 10),
   },
-  inventory: {
-    lockTimeout: parseInt(process.env['INVENTORY_LOCK_TIMEOUT'] || '30000', 10), // 30 seconds
-  },
 } as const;
 
 // Validation
