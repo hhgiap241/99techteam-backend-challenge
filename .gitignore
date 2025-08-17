@@ -109,7 +109,6 @@ secrets/
 # ============================================================================
 Dockerfile.prod
 docker-compose.override.yml
-.dockerignore
 
 # ============================================================================
 # Keep Important Files (Override above ignores)
