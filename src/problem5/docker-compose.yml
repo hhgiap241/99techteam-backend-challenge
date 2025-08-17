@@ -1,32 +1,85 @@
 version: '3.8'
 
 services:
-  postgres:
+  database:
     image: postgres:15-alpine
-    container_name: bookstore_postgres
+    container_name: bookstore-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: bookstore_db
-      POSTGRES_INITDB_ARGS: '--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8'
+      POSTGRES_DB: ${DB_DATABASE:-bookstore_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - '5432:5432'
+      - '${DB_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
     networks:
-      - bookstore_network
+      - bookstore-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d bookstore_db']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${DB_USER:-postgres} -d ${DB_DATABASE:-bookstore_db}',
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
+  # Bookstore API Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookstore-api
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-bookstore_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      # Database Setup
+      SEED_DATABASE: ${SEED_DATABASE:-true}
+    ports:
+      - '${PORT:-3000}:3000'
+    networks:
+      - bookstore-network
+    volumes:
+      - api_logs:/app/logs
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:3000/health',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# Named Volumes for Data Persistence
 volumes:
   postgres_data:
     driver: local
+    name: bookstore_postgres_data
+  api_logs:
+    driver: local
+    name: bookstore_api_logs
 
+# Custom Network for Service Communication
 networks:
-  bookstore_network:
+  bookstore-network:
     driver: bridge
+    name: bookstore-network
