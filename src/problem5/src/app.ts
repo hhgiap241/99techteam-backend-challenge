@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import { DatabaseService } from './database/connection';
+import { setupSwagger } from './config/swagger';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -55,6 +56,9 @@ export class App {
         next();
       });
     }
+
+    // Setup Swagger documentation
+    setupSwagger(this.app);
   }
 
   private initializeRoutes(): void {
@@ -94,8 +98,10 @@ export class App {
       res.status(200).json({
         message: 'Bookstore API is running!',
         version: '1.0.0',
+        documentation: '/api-docs',
         endpoints: [
           'GET /health - Health check',
+          'GET /api-docs - API Documentation (Swagger UI)',
           'POST /api/auth/register - Register user',
           'POST /api/auth/login - Login user',
           'POST /api/auth/refresh - Refresh token',
@@ -142,6 +148,16 @@ export class App {
       console.log(`🚀 Bookstore API server running on port ${config.server.port}`);
       console.log(`📚 Environment: ${config.server.nodeEnv}`);
       console.log(`🔗 Health check: http://localhost:${config.server.port}/health`);
+      console.log(`🔗 API documentation: http://localhost:${config.server.port}/api-docs`);
+      console.log(`
+        🔗 Admin credentials:
+        Email: admin@bookstore.com
+        Password: password123
+
+        🔗 Customer credentials:
+        Email: john@example.com / jane@example.com
+        Password: password123
+                `);
     });
   }
 }
