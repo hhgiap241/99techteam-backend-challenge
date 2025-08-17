@@ -183,7 +183,7 @@ describe('Auth Middleware', () => {
       } as unknown as User;
 
       mockRequest.user = mockUser;
-      const authorizeMiddleware = authorizeRoles(UserRole.ADMIN);
+      const authorizeMiddleware = authorizeRoles('ADMIN');
 
       authorizeMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 

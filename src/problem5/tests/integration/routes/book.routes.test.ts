@@ -29,7 +29,7 @@ jest.mock('../../../src/middleware/auth.middleware', () => ({
   authorizeRoles: (...roles: string[]) => {
     return (req: any, res: any, next: any) => {
       const user = req.user;
-      if (user && roles.includes(user.role)) {
+      if (user && roles.includes(user.role.toLocaleUpperCase())) {
         next();
       } else {
         res.status(403).json({

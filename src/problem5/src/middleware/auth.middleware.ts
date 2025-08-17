@@ -96,7 +96,7 @@ export function authorizeRoles(...roles: string[]) {
       return;
     }
 
-    if (!roles.includes(authenticatedReq.user.role)) {
+    if (!roles.includes(authenticatedReq.user.role.toLocaleUpperCase())) {
       res.status(403).json({
         success: false,
         message: 'Insufficient permissions'
