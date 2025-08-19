@@ -4,11 +4,11 @@ This repository contains my solutions to the 99Tech backend engineering challeng
 
 ## 📋 Problems Overview
 
-| Problem       | Title                                        | Technology Stack                                    | Status         |
-| ------------- | -------------------------------------------- | --------------------------------------------------- | -------------- |
-| **Problem 4** | [Three Ways to Sum to n](./src/problem4/)    | TypeScript, Jest, Benchmarking                      | ✅ Complete    |
-| **Problem 5** | [Bookstore REST API](./src/problem5/)        | Node.js, Express, PostgreSQL, TypeORM, Docker, Jest | ✅ Complete    |
-| **Problem 6** | [Real-time Leaderboard API](./src/problem6/) | Node.js, Redis, SSE, PostgreSQL                     | 📋 Design Spec |
+| Problem       | Title                                        | Technology Stack                                                    | Status         |
+| ------------- | -------------------------------------------- | ------------------------------------------------------------------- | -------------- |
+| **Problem 4** | [Three Ways to Sum to n](./src/problem4/)    | TypeScript, Jest, Benchmarking                                      | ✅ Complete    |
+| **Problem 5** | [Bookstore REST API](./src/problem5/)        | Node.js, Express, PostgreSQL, TypeORM, Docker, Jest, Test Container | ✅ Complete    |
+| **Problem 6** | [Real-time Leaderboard API](./src/problem6/) | Node.js, Redis, SSE, PostgreSQL                                     | 📋 Design Spec |
 
 ## 🎯 Key Highlights
 

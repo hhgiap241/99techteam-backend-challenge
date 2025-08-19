@@ -1,6 +1,6 @@
 # Bookstore API 📚
 
-A comprehensive REST API for managing a bookstore with user authentication, book management, and order processing. Built with Node.js, TypeScript, Express, PostgreSQL, and TypeORM.
+A comprehensive REST API for managing a bookstore with user authentication, book management, and order processing. Built with Node.js, TypeScript, Express, PostgreSQL, and TypeORM. Features comprehensive testing with Jest, Docker containerization, and testcontainers for reliable integration testing.
 
 ## 📑 Table of Contents
 
