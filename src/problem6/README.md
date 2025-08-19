@@ -1,5 +1,41 @@
 # Real-time Leaderboard API Module 🏆
 
+## 📑 Table of Contents
+
+- [Overview](#overview)
+- [1. Functional Requirements](#1-functional-requirements)
+  - [1.1 Core Requirements](#11-core-requirements)
+  - [1.2 Out of Scope](#12-out-of-scope)
+- [2. Non-Functional Requirements](#2-non-functional-requirements)
+- [3. API Endpoints](#3-api-endpoints)
+  - [3.1 Get Leaderboard API](#31-get-leaderboard-api)
+  - [3.2 Score Update API](#32-score-update-api)
+  - [3.3 Server-Sent Events (SSE) - Real-time Updates](#33-server-sent-events-sse---real-time-updates)
+    - [SSE Connection](#sse-connection)
+    - [SSE Event Types](#sse-event-types)
+  - [3.3 Database Models & Schema](#33-database-models--schema)
+    - [PostgreSQL Schema](#postgresql-schema)
+    - [Redis Data Models](#redis-data-models)
+- [4. High Level Design](#4-high-level-design)
+  - [4.1 System Architecture](#41-system-architecture)
+  - [Technology Stack](#technology-stack)
+- [5. Execution Flow](#5-execution-flow)
+- [6. Future Improvements](#6-future-improvements)
+  - [6.1 Scalability Enhancements](#61-scalability-enhancements)
+  - [6.2 Performance Enhancements](#62-performance-enhancements)
+  - [6.3 Advanced Features](#63-advanced-features)
+  - [6.4 Security & Anti-Cheat](#64-security--anti-cheat)
+    - [Advanced Anti-Cheat Systems](#advanced-anti-cheat-systems)
+    - [Security Hardening](#security-hardening)
+  - [6.5 Analytics & Business Intelligence](#65-analytics--business-intelligence)
+    - [Advanced Analytics](#advanced-analytics)
+    - [Monitoring & Observability](#monitoring--observability)
+  - [6.6 Operational Excellence](#66-operational-excellence)
+    - [DevOps & Deployment](#devops--deployment)
+    - [Business Integration](#business-integration)
+
+---
+
 ## Overview
 
 This document specifies a software module for implementing a real-time leaderboard system that displays the top 10 users' scores with live updates. The system prevents malicious score manipulation while providing efficient real-time updates to all connected clients.

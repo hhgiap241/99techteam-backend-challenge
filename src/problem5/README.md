@@ -2,6 +2,42 @@
 
 A comprehensive REST API for managing a bookstore with user authentication, book management, and order processing. Built with Node.js, TypeScript, Express, PostgreSQL, and TypeORM.
 
+## 📑 Table of Contents
+
+- [🏗️ Architecture Overview](#️-architecture-overview)
+- [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Method 1: Development Setup (Recommended)](#method-1-development-setup-recommended)
+  - [Method 2: Full Docker Setup](#method-2-full-docker-setup)
+- [📡 API Endpoints](#-api-endpoints)
+  - [Authentication](#authentication)
+  - [Books (Public)](#books-public)
+  - [Books (Admin Only)](#books-admin-only)
+  - [Orders (Authenticated)](#orders-authenticated)
+  - [Swagger UI](#swagger-ui)
+  - [API Overview](#api-overview)
+- [🔐 Authentication Flow](#-authentication-flow)
+  - [Registration Flow](#registration-flow)
+  - [Login Flow](#login-flow)
+- [📚 Book Management Flows](#-book-management-flows)
+  - [Get Books with Filters](#get-books-with-filters)
+  - [Get Book by ID](#get-book-by-id)
+  - [Create Book (Admin Only)](#create-book-admin-only)
+  - [Update Book (Admin Only)](#update-book-admin-only)
+  - [Delete Book (Admin Only)](#delete-book-admin-only)
+- [🧪 Testing](#-testing)
+  - [Run All Tests](#run-all-tests)
+  - [Test Structure](#test-structure)
+- [📊 Code Quality with SonarQube](#-code-quality-with-sonarqube)
+  - [Setup SonarQube](#setup-sonarqube)
+  - [Access SonarQube](#access-sonarqube)
+- [🚀 Future Improvements](#-future-improvements)
+  - [🔧 Technical Enhancements](#-technical-enhancements)
+  - [🔐 Security & Compliance](#-security--compliance)
+  - [📊 Monitoring & DevOps](#-monitoring--devops)
+
+---
+
 ## 🏗️ Architecture Overview
 
 The application follows a layered architecture pattern:

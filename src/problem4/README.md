@@ -1,5 +1,27 @@
 # Problem 4: Three Ways to Sum to n
 
+## 📑 Table of Contents
+
+- [🎯 Problem Statement](#-problem-statement)
+- [📁 Project Structure](#-project-structure)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [🏃‍♂️ How to Run](#️-how-to-run)
+  - [1. Run Interactive Demo](#1-run-interactive-demo)
+  - [2. Run Tests](#2-run-tests)
+  - [3. Run Benchmarks](#3-run-benchmarks)
+- [🧮 Algorithm Details](#-algorithm-details)
+  - [Implementation A: Iterative Approach (`sum_to_n_a`)](#implementation-a-iterative-approach-sum_to_n_a)
+  - [Implementation B: Recursive with Memoization (`sum_to_n_b`)](#implementation-b-recursive-with-memoization-sum_to_n_b)
+  - [Implementation C: Mathematical Formula (`sum_to_n_c`)](#implementation-c-mathematical-formula-sum_to_n_c)
+- [🛡️ Input Validation](#️-input-validation)
+- [📊 Performance Characteristics](#-performance-characteristics)
+- [📈 Benchmark Results](#-benchmark-results)
+- [🎓 Key Learnings](#-key-learnings)
+
+---
+
 ## 🎯 Problem Statement
 
 Provide 3 different implementations of a function that computes the sum from 1 to n:
