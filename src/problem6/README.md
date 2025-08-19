@@ -294,73 +294,98 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant User as User (Score Update)
+    participant User as User Client
+    participant LB as Load Balancer
     participant API as API Server
+    participant AuthSvc as Auth Service
+    participant ScoreSvc as Score Service
+    participant SSESvc as SSE Service
     participant Redis as Redis Cache
     participant DB as PostgreSQL
-    participant SSE as SSE Manager
     participant Clients as Connected Clients
 
-    User->>API: POST /api/v1/scores/update
-    Note over User,API: {scoreIncrement: 100}
+    User->>LB: POST /api/v1/scores/update
+    Note over User,LB: {scoreIncrement: 100}
 
-    API->>Redis: ZADD leaderboard:global newScore userId
-    API->>Redis: ZREVRANGE leaderboard:global 0 9 WITHSCORES
-    Redis-->>API: Updated top 10 list
+    LB->>API: Route to API server
+    API->>AuthSvc: validateJWT(token)
+    AuthSvc-->>API: {valid: true, userId: "user-123"}
 
-    par Update PostgreSQL (Async)
-        API->>DB: UPDATE user_scores SET current_score = newScore
-        API->>DB: INSERT INTO score_history (user_id, score_change, timestamp)
+    API->>ScoreSvc: updateUserScore(userId, increment)
+
+    Note over ScoreSvc: Business Logic Layer
+    ScoreSvc->>Redis: ZCARD rate_limit:score_update:user-123
+    Redis-->>ScoreSvc: Current request count
+
+    alt Rate Limit Exceeded
+        ScoreSvc-->>API: {error: "Rate limit exceeded"}
+        API-->>User: 429 Too Many Requests
+    else Rate Limit OK
+        ScoreSvc->>Redis: ZADD leaderboard:global newScore userId
+        ScoreSvc->>Redis: ZREVRANGE leaderboard:global 0 9 WITHSCORES
+        Redis-->>ScoreSvc: Updated top 10 list
+
+        par Update Database (Async)
+            ScoreSvc->>DB: UPDATE scores SET current_score = newScore
+            ScoreSvc->>DB: INSERT INTO score_history (...)
+        end
+
+        ScoreSvc->>ScoreSvc: detectLeaderboardChanges(oldTop10, newTop10)
+
+        alt Top 10 Rankings Changed
+            ScoreSvc->>SSESvc: broadcastLeaderboardUpdate(event_data)
+            Note over ScoreSvc,SSESvc: Event Data:<br/>{"type":"score_update",<br/>"leaderboard":[...],<br/>"timestamp":"..."}
+
+            SSESvc->>SSESvc: getActiveConnections()
+            SSESvc->>Clients: event: score_update
+            Note over SSESvc,Clients: Broadcast to all connected clients
+
+            SSESvc->>Redis: HINCRBY sse_stats events_sent 1
+        end
+
+        ScoreSvc-->>API: {success: true, newScore, newRank, inTopTen}
+        API-->>User: 200 OK {newScore, newRank, inTopTen}
     end
-
-    API->>API: detectLeaderboardChanges(oldTop10, newTop10)
-
-    alt Top 10 Rankings Changed
-        API->>SSE: broadcastLeaderboardUpdate(event_data)
-        Note over API,SSE: Event Data:<br/>{"type":"score_update",<br/>"changes":[...],<br/>"newLeaderboard":[...],<br/>"timestamp":"..."}
-
-        SSE->>SSE: getActiveConnections()
-        SSE->>Clients: event: score_update
-        Note over SSE,Clients: Sent to all connected clients
-
-        SSE->>Redis: HINCRBY sse_stats events_sent 1
-
-    else No Top 10 Change
-        Note over API,SSE: No broadcast needed<br/>Only rank positions may have changed
-    end
-
-    API-->>User: 200 OK {newScore, newRank, inTopTen}
 ```
+
+````
 
 ### 5.2 Anti-Cheat Validation Flow
 
 ```mermaid
 flowchart TD
-    A[Score Update Request] --> B{Valid JWT Token?}
-    B -->|No| C[Return 401 Unauthorized]
-    B -->|Yes| D[Extract User ID from Token]
+    A[Score Update Request] --> B[Load Balancer]
+    B --> C[API Server]
 
-    D --> E{Rate Limit Check<br/>Redis: ZCARD rate_limit:userId}
-    E -->|Exceeded| F[Return 429 Rate Limited]
-    E -->|OK| G{Valid Score Increment?<br/>Positive integer ≤ 1000}
+    C --> D[Auth Service:<br/>Validate JWT Token]
+    D -->|Invalid| E[Return 401 Unauthorized]
+    D -->|Valid| F[Extract User ID from Token]
 
-    G -->|No| H[Return 400 Bad Request]
-    G -->|Yes| I{Anomaly Detection<br/>Check score increase pattern}
+    F --> G[Score Service:<br/>Rate Limit Check]
+    G -->|Check Redis| H{ZCARD rate_limit:userId}
+    H -->|Exceeded| I[Return 429 Rate Limited]
+    H -->|OK| J[Score Service:<br/>Validate Score Increment]
 
-    I -->|Suspicious Pattern| J[Log Anomaly Event<br/>+ Flag for Review]
-    I -->|Normal Pattern| K[Proceed with Update]
-    J --> L{Allow or Block?<br/>Based on severity}
-    L -->|Block| M[Return 403 Suspicious Activity]
-    L -->|Allow with Warning| K
+    J -->|Invalid| K[Return 400 Bad Request]
+    J -->|Valid| L[Score Service:<br/>Anomaly Detection]
 
-    K --> N[Update Redis Leaderboard<br/>ZADD leaderboard:global]
-    N --> O[Update PostgreSQL<br/>user_scores + score_history]
-    O --> P{Top 10 Rankings Changed?}
+    L -->|Suspicious Pattern| M[Log Anomaly Event<br/>+ Flag for Review]
+    L -->|Normal Pattern| N[Proceed with Update]
+    M --> O{Allow or Block?<br/>Based on severity}
+    O -->|Block| P[Return 403 Suspicious Activity]
+    O -->|Allow with Warning| N
 
-    P -->|Yes| Q[Broadcast SSE Update<br/>to all connected clients]
-    P -->|No| R[Return Success Response<br/>newScore, newRank]
-    Q --> R
-```
+    N --> Q[Score Service:<br/>Update Redis Leaderboard]
+    Q --> R[Score Service:<br/>Update PostgreSQL]
+    R --> S{Top 10 Rankings Changed?}
+
+    S -->|Yes| T[SSE Service:<br/>Broadcast Update]
+    T --> U[Return Success Response]
+    S -->|No| U
+
+    U --> V[API Server Response<br/>newScore, newRank]
+
+````
 
 **Anti-Cheat Rules:**
 
@@ -376,10 +401,9 @@ sequenceDiagram
     participant Client as Web Client
     participant LB as Load Balancer
     participant API as API Server
-    participant SSE as SSE Manager
-    participant CONN as Connection Manager
+    participant Auth as Auth Service
+    participant SSE as SSE Service
     participant Redis as Redis Cache
-    participant HB as Heartbeat Service
 
     Note over Client,API: Initial SSE Connection Setup
 
@@ -387,34 +411,37 @@ sequenceDiagram
     Note over Client,LB: Headers:<br/>Accept: text/event-stream<br/>Cache-Control: no-cache<br/>Authorization: Bearer [token]
 
     LB->>API: Route to API server
+    API->>Auth: validateToken(token)
 
-    API->>API: Optional JWT validation
-    API->>SSE: createConnection(clientId, userId?)
+    alt Valid Token
+        Auth-->>API: userId, valid=true
+        API->>SSE: createConnection(clientId, userId)
+        SSE->>Redis: SADD sse_clients:active clientId
+        SSE->>Redis: SETEX sse_client:clientId 300 metadata
 
-    SSE->>CONN: registerClient(clientId, metadata)
-    CONN->>Redis: SADD sse_clients:active clientId
-    CONN->>Redis: SETEX sse_client:clientId 300 metadata
+        SSE-->>API: connection_id
+        API->>Client: HTTP 200 OK
+        Note over API,Client: Headers:<br/>Content-Type: text/event-stream<br/>Connection: keep-alive<br/>X-Accel-Buffering: no
 
-    SSE->>Client: HTTP 200 OK
-    Note over SSE,Client: Headers:<br/>Content-Type: text/event-stream<br/>Connection: keep-alive<br/>X-Accel-Buffering: no
+        SSE->>Redis: ZREVRANGE leaderboard:global 0 9 WITHSCORES
+        Redis-->>SSE: Current top 10 data
 
-    SSE->>Redis: ZREVRANGE leaderboard:global 0 9 WITHSCORES
-    Redis-->>SSE: Current top 10 data
+        SSE->>Client: event: leaderboard_full
+        Note over SSE,Client: data: {"type":"leaderboard_full",<br/>"leaderboard":[...],<br/>"timestamp":"2025-08-17T10:30:00Z"}
 
-    SSE->>Client: event: leaderboard_full
-    Note over SSE,Client: data: {"type":"leaderboard_full",<br/>"leaderboard":[...],<br/>"timestamp":"2025-08-17T10:30:00Z"}
+        loop Every 30 seconds
+            SSE->>Client: event: heartbeat
+            Note over SSE,Client: data: {"type":"heartbeat",<br/>"timestamp":"...",<br/>"connectedClients":847}
 
-    SSE->>HB: startHeartbeat(clientId)
-
-    loop Every 30 seconds
-        HB->>Client: event: heartbeat
-        Note over HB,Client: data: {"type":"heartbeat",<br/>"timestamp":"...",<br/>"connectedClients":847}
-
-        HB->>HB: checkClientAlive(clientId)
-        alt Client not responding
-            HB->>CONN: removeClient(clientId)
-            HB->>Redis: SREM sse_clients:active clientId
+            alt Client not responding
+                SSE->>Redis: SREM sse_clients:active clientId
+                SSE->>Redis: DEL sse_client:clientId
+            end
         end
+
+    else Invalid Token
+        Auth-->>API: valid=false
+        API->>Client: HTTP 401 Unauthorized
     end
 
     Note over Client,Redis: Connection stays active for real-time updates
@@ -426,41 +453,29 @@ sequenceDiagram
 
 ### 6.1 Scalability Enhancements
 
-#### Horizontal Scaling
-
 - **Redis Clustering**: Distribute leaderboard data across multiple Redis nodes with consistent hashing
 - **Database Sharding**: Partition user data by user_id ranges or geographic regions
 - **API Server Auto-scaling**: Kubernetes HPA based on CPU/memory usage and SSE connection count
-- **CDN Integration**: Cache static leaderboard snapshots at edge locations for global users
 - **Multi-region Deployment**: Deploy in multiple AWS/Azure regions with cross-region replication
 
-#### Performance Optimizations
+### 6.2 Performance Enhancements
 
+- **CDN Integration**: Cache static leaderboard snapshots at edge locations for global users
 - **Connection Pooling**: Implement Redis and PostgreSQL connection pooling (PgBouncer, Redis connection pools)
 - **Batch Processing**: Group multiple score updates for efficient database writes
 - **Read Replicas**: PostgreSQL read replicas for analytics and backup queries
 - **Caching Layers**: Multi-tier caching (L1: In-memory, L2: Redis, L3: Database)
-- **Compression**: Implement gzip compression for SSE events and API responses
 
-### 6.2 Advanced Features
-
-#### Enhanced Leaderboards
+### 6.3 Advanced Features
 
 - **Multiple Leaderboards**: Category-based (daily, weekly, monthly), regional, skill-level leaderboards
 - **Historical Rankings**: Track rank changes over time with trend analysis
-- **Seasonal Resets**: Automatic leaderboard resets with archival of previous seasons
-- **Custom Scoring Rules**: Configurable scoring algorithms, decay functions, bonus multipliers
-- **Leaderboard Segments**: Friends-only leaderboards, guild/team leaderboards
-
-#### Real-time Enhancements
-
 - **WebSocket Upgrade**: Bidirectional communication for interactive features
 - **Push Notifications**: Mobile push notifications for rank changes and achievements
-- **Real-time Chat**: Live chat overlay on leaderboard with moderation
 - **Achievement System**: Real-time achievement unlocks with visual celebrations
 - **Live Events**: Special tournament modes with real-time brackets and updates
 
-### 6.3 Security & Anti-Cheat
+### 6.4 Security & Anti-Cheat
 
 #### Advanced Anti-Cheat Systems
 
@@ -478,7 +493,7 @@ sequenceDiagram
 - **Encrypted Communications**: End-to-end encryption for sensitive score operations
 - **API Security**: OAuth 2.0, API versioning, input sanitization, SQL injection prevention
 
-### 6.4 Analytics & Business Intelligence
+### 6.5 Analytics & Business Intelligence
 
 #### Advanced Analytics
 
@@ -494,15 +509,13 @@ sequenceDiagram
 - **Intelligent Alerting**: ML-based anomaly detection for system and business metrics
 - **Log Aggregation**: Centralized logging with ELK stack and searchable dashboards
 
-### 6.5 Operational Excellence
+### 6.6 Operational Excellence
 
 #### DevOps & Deployment
 
 - **Blue-Green Deployment**: Zero-downtime deployments with instant rollback capability
-- **Canary Releases**: Gradual rollout of features to percentage of users
-- **Infrastructure as Code**: Terraform/CloudFormation for reproducible deployments
-- **CI/CD Pipelines**: Automated testing, security scans, and deployment pipelines
-- **Chaos Engineering**: Fault injection testing to improve system resilience
+- **Infrastructure as Code**: Terraform for reproducible deployments
+- **CI/CD Pipelines**: Automated testing, security scans, and deployment pipelines with GitHub Actions
 
 #### Business Integration
 
@@ -510,39 +523,5 @@ sequenceDiagram
 - **Revenue Integration**: Monetize leaderboard features with premium tiers and cosmetics
 - **Social Media Integration**: Share achievements on Twitter, Facebook, Discord
 - **Third-party APIs**: Integration with game platforms, analytics tools, customer support
-
-### 6.6 Implementation Roadmap
-
-#### Phase 1 (Months 1-3): Foundation
-
-- ✅ Core leaderboard functionality with SSE
-- ✅ Basic anti-cheat and rate limiting
-- 🔄 Performance optimization and load testing
-- 🔄 Monitoring and alerting setup
-- 📋 API documentation and SDK development
-
-#### Phase 2 (Months 4-6): Scale & Security
-
-- 📋 Redis clustering and database read replicas
-- 📋 Advanced rate limiting and fraud detection
-- 📋 Multi-region deployment preparation
-- 📋 Enhanced monitoring and analytics
-- 📋 Mobile SDK and push notifications
-
-#### Phase 3 (Months 7-12): Advanced Features
-
-- 📋 Multiple leaderboard types and historical data
-- 📋 ML-based anti-cheat systems
-- 📋 Real-time chat and social features
-- 📋 Advanced caching and performance optimization
-- 📋 Business intelligence and predictive analytics
-
-#### Phase 4 (Year 2+): Enterprise Scale
-
-- 📋 Microservices architecture with service mesh
-- 📋 Global multi-region active-active deployment
-- 📋 Advanced security compliance (SOC2, GDPR)
-- 📋 Enterprise integrations and white-label solutions
-- 📋 AI-powered personalization and recommendations
 
 ---
